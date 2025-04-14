@@ -14,11 +14,25 @@ import cartRouter from './route/cart.route.js'
 import addressRouter from './route/address.route.js'
 import orderRouter from './route/order.route.js'
 
+
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL, // deployed frontend
+  "http://localhost:5173", // local frontend dev (Vite)
+  "http://localhost:3000", // in case you use CRA or Next
+];
+
 const app = express()
 app.use(
   cors({
+    function(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS: " + origin));
+      }
+    },
     credentials: true,
-    origin : process.env.FRONTEND_URL
     // origin : "http://localhost:5173"
   })
 );
