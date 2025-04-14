@@ -299,7 +299,7 @@ export async function logoutController(request, response) {
 //upload user avatar
 export async  function uploadAvatar(request,response){
     try {
-        const userId = request.userId // auth middlware
+        const userId = request.user.id // auth middlware
         const image = request.file  // multer middleware
 
         const upload = await uploadImageClodinary(image)
@@ -330,13 +330,28 @@ export async  function uploadAvatar(request,response){
 //update user details
 export async function updateUserDetails(request, response) {
   try {
-    const userId = request.userId; // From auth middleware
-    const { name, mobile, password } = request.body;
+    const userId = request.user.id; // From auth middleware
+    console.log(userId, "userId");
+    const { name, mobile, password, email } = request.body;
 
-    if (!name && !mobile && !password) {
+    // Email update not allowed
+    // if (email) {
+    //   return res
+    //     .status(400)
+    //     .json({
+    //       success: false,
+    //       error: true,
+    //       message: "Email cannot be updated",
+    //     });
+    // }
+
+    const user = await UserModel.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    if (!name && !mobile) {
       return response.status(400).json({
         message:
-          "Provide at least one field to update (name, mobile, password)",
+          "Provide at least one field to update (name, mobile)",
         error: true,
         success: false,
       });
@@ -344,8 +359,8 @@ export async function updateUserDetails(request, response) {
 
     let hashPassword = "";
     if (password) {
-      const salt = await bcryptjs.genSalt(10);
-      hashPassword = await bcryptjs.hash(password, salt);
+      const salt = await bcrypt.genSalt(10);
+      hashPassword = await bcrypt.hash(password, salt);
     }
 
     const updatePayload = {
