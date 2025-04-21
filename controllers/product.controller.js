@@ -167,41 +167,85 @@ export const getProductController = async (request, response) => {
   }
 };
 
-export const getProductByCategory = async (request, response) => {
+export const getProductByCategory = async (req, res) => {
   try {
-    const { id } = request.body;
+    const { categoryId, page = 1, limit = 15 } = req.body;
 
-    if (!id) {
-      return response.status(400).json({
-        message: "Provide category ID",
-        error: true,
+    if (!categoryId) {
+      return res.status(400).json({
         success: false,
+        message: "Category ID is required",
+      });
+    }
+
+    const currentDate = new Date();
+    const skip = (page - 1) * limit;
+
+    const filter = {
+      category: categoryId,
+      stock: { $gt: 0 },
+      expiry_date: { $gt: currentDate },
+      publish: true,
+    };
+
+    const [products, totalCount] = await Promise.all([
+      ProductModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      ProductModel.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      message: "Products by category",
+      data: products,
+      totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message || "Server error",
+    });
+  }
+};
+
+
+export const getProductsBySubCategory = async (req, res) => {
+  try {
+    const { subCategoryId, limit = 15 } = req.body;
+
+    if (!subCategoryId) {
+      return res.status(400).json({
+        success: false,
+        message: "Subcategory ID is required",
       });
     }
 
     const currentDate = new Date();
 
     const products = await ProductModel.find({
-      category: { $in: [id] }, // Ensure id is treated as an array
+      subCategory: subCategoryId,
       stock: { $gt: 0 },
       expiry_date: { $gt: currentDate },
       publish: true,
-    }).limit(15);
+    })
+      .sort({ createdAt: -1 })
+      .limit(limit);
 
-    return response.json({
-      message: "Medicines by category",
-      data: products,
-      error: false,
+    res.json({
       success: true,
+      message: "Products by subcategory",
+      data: products,
     });
-  } catch (error) {
-    return response.status(500).json({
-      message: error.message || "Server error fetching medicines by category",
-      error: true,
+  } catch (err) {
+    res.status(500).json({
       success: false,
+      message: err.message || "Server error",
     });
   }
 };
+
 
 export const getProductByCategoryAndSubCategory = async (request, response) => {
   try {
@@ -300,7 +344,7 @@ export const getProductDetails = async (request, response) => {
 //update product
 export const updateProductDetails = async (request, response) => {
   try {
-    const { _id } = request.params;
+    const { _id } = request.body;
     const { ...updateData } = request.body;
 
     if (!_id) {
@@ -360,7 +404,7 @@ export const updateProductDetails = async (request, response) => {
 //delete product
 export const deleteProductDetails = async (request, response) => {
   try {
-    const { _id } = request.params;
+    const { _id } = request.body;
 
     if (!_id) {
       return response.status(400).json({
