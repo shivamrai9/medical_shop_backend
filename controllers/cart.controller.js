@@ -85,7 +85,7 @@ export const addToCartItemController = async (request, response) => {
 
 export const getCartItemController = async (request, response) => {
   try {
-    const userId = request.userId;
+    const userId = request.user.id;
 
     const cartItems = await CartProductModel.find({ userId }).populate({
       path: "productId",
@@ -117,7 +117,7 @@ export const getCartItemController = async (request, response) => {
 
 export const updateCartItemQtyController = async (request, response) => {
   try {
-    const userId = request.userId;
+    const userId = request.user.id;
     const { _id, qty } = request.body;
 
     if (!_id || !qty || qty < 1) {
@@ -182,7 +182,7 @@ export const updateCartItemQtyController = async (request, response) => {
 
 export const deleteCartItemQtyController = async (request, response) => {
   try {
-    const userId = request.userId;
+    const userId = request.user.id;
     const { _id } = request.body;
 
     if (!_id) {

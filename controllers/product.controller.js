@@ -3,6 +3,10 @@ import CategoryModel from "../models/category.model.js";
 import uploadImageClodinary from "../utils/uploadImageClodinary.js";
 
 export const createProduct = async (req, res) => {
+
+  console.log("Body:", req.body);
+  console.log("Files length:", req.files?.length);
+
   try {
     let {
       name,
@@ -34,6 +38,7 @@ export const createProduct = async (req, res) => {
 
     // 🔥 Image Upload to Cloudinary
     let image = [];
+    console.log(req.files,"///////////////////////////////////////////////////////////");
     if (req.files && req.files.length > 0) {
       const uploadPromises = req.files.map((file) =>
         uploadImageClodinary(file)

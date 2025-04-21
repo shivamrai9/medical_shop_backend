@@ -16,7 +16,7 @@ import upload from '../middleware/multer.js';
 const productRouter = Router()
 
 productRouter.post("/create", upload.array("images"), createProduct);
-productRouter.post('/get',getProductController)
+productRouter.post('/get',getProductController) 
 productRouter.post("/get-product-by-category",getProductByCategory)
 productRouter.post('/get-pruduct-by-category-and-subcategory',getProductByCategoryAndSubCategory)
 productRouter.post('/get-product-details',getProductDetails)
